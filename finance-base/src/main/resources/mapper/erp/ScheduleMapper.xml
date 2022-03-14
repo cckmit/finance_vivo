@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vivo.finance.mapper.erp.ScheduleMapper">
+
+    <!--同步ERP12银行账户余额表-->
+    <insert id="synCuxBankAcctBalances">
+        merge into SCF.fm_cux_bank_acct_balances t1
+            using (select t.* from scf.fmviews_cux_bank_acct_balances t  where t.balance_date >=  ADD_MONTHS(sysdate,-3)) t2
+            on (t1.bank_account_id  = t2.bank_account_id  and t1.currency_code  = t2.currency_code  and t1.balance_date = t2.balance_date)
+            when matched then
+                update
+                    set
+                        t1.beginning_balance     = t2.beginning_balance,
+                        t1.debit_balance         = t2.debit_balance,
+                        t1.credit_balance        = t2.credit_balance,
+                        t1.ending_balance        = t2.ending_balance,
+                        t1.debit_line_count      = t2.debit_line_count,
+                        t1.credit_line_count     = t2.credit_line_count,
+                        t1.bank_account_name     = t2.bank_account_name,
+                        t1.bank_account_num      = t2.bank_account_num,
+                        t1.bank_name             = t2.bank_name,
+                        t1.bank_account_name_alt = t2.bank_account_name_alt,
+                        t1.request_id            = t2.request_id,
+                        t1.status                = t2.status,
+                        t1.source_type           = t2.source_type,
+                        t1.message_text          = t2.message_text,
+                        t1.created_by            = t2.created_by,
+                        t1.creation_date         = t2.creation_date,
+                        t1.last_updated_by       = t2.last_updated_by,
+                        t1.last_update_login     = t2.last_update_login,
+                        t1.last_update_date      = t2.last_update_date
+            when not matched then
+                insert
+                    (t1.bank_account_id,
+                     t1.currency_code,
+                     t1.balance_date,
+                     t1.beginning_balance,
+                     t1.debit_balance,
+                     t1.credit_balance,
+                     t1.ending_balance,
+                     t1.debit_line_count,
+                     t1.credit_line_count,
+                     t1.bank_account_name,
+                     t1.bank_account_num,
+                     t1.bank_name,
+                     t1.bank_account_name_alt,
+                     t1.request_id,
+                     t1.status,
+                     t1.source_type,
+                     t1.message_text,
+                     t1.created_by,
+                     t1.creation_date,
+                     t1.last_updated_by,
+                     t1.last_update_login,
+                     t1.last_update_date
+                )
+                    values
+                    (t2.bank_account_id,
+                     t2.currency_code,
+                     t2.balance_date,
+                     t2.beginning_balance,
+                     t2.debit_balance,
+                     t2.credit_balance,
+                     t2.ending_balance,
+                     t2.debit_line_count,
+                     t2.credit_line_count,
+                     t2.bank_account_name,
+                     t2.bank_account_num,
+                     t2.bank_name,
+                     t2.bank_account_name_alt,
+                     t2.request_id,
+                     t2.status,
+                     t2.source_type,
+                     t2.message_text,
+                     t2.created_by,
+                     t2.creation_date,
+                     t2.last_updated_by,
+                     t2.last_update_login,
+                     t2.last_update_date
+                    )
+    </insert>
+</mapper>

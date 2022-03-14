@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.vivo.finance.mapper.erp.FmAcctFlowDayMapper">
+
+
+    <!--获取账号币种的月度期初，期末值-->
+    <select id="getFlowMoth" resultType="com.vivo.finance.dto.response.erp.FmAcctFlowMonth" parameterType="hashmap">
+        select t2.bank_account_name,
+               sum(t.beginning_balance) as beginning_balance,
+               sum(t1.ending_balance) as ending_balance
+        from scf.fm_cux_bank_acct_balances t
+                 left join scf.fm_cux_bank_acct_balances t1
+                           on t.bank_account_id = t1.bank_account_id
+                               and t.currency_code = t1.currency_code
+                               and last_day(t.balance_date) = t1.balance_date
+                 left join scf.accounts_info t2
+                           on t.bank_account_id = t2.bank_account_id
+        where t.balance_date = trunc(to_date(#{startDate,jdbcType=VARCHAR}, 'yyyy-mm-dd'), 'mm')
+          and t.currency_code = 'CNY'
+          and ASCIISTR(t2.bank_account_name) LIKE '%\%'
+        group by t2.bank_account_name
+    </select>
+
+    <select id="getFlowDay" parameterType="hashmap"  resultType="com.vivo.finance.dto.response.erp.FmAcctFlowMonth">
+        select t1.bank_account_name,
+               sum(t.day_income) as day_income,
+               sum(t.month_income) as month_income,
+               sum(t.day_expense) as day_expense,
+               sum(t.month_expense) as month_expense
+        from scf.fm_acct_flow_day t
+            left join scf.accounts_info t1
+            on t.bank_account_id = t1.bank_account_id
+        where t.type = '1'
+          and t.currency_code = 'CNY'
+          and t.balance_date = to_date(#{startDate,jdbcType=VARCHAR}, 'yyyy-mm-dd')
+          and ASCIISTR(t1.bank_account_name) LIKE '%\%'
+        group by t1.bank_account_name
+    </select>
+
+    <select id="getClassFlowDay" parameterType="hashmap"  resultType="com.vivo.finance.dto.response.erp.FmAcctFlowMonth">
+        select t.attribute1,
+               sum(t.day_income),
+               sum(t.month_income),
+               sum(t.day_expense),
+               sum(t.month_expense)
+        from fm_acct_flow_day t
+        where t.type = '2'
+          and t.balance_date = to_date(#{startDate,jdbcType=VARCHAR}, 'yyyy-mm-dd')
+          and t.currency_code = 'CNY'
+        group by t.attribute1
+    </select>
+</mapper>
